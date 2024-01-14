@@ -20,37 +20,50 @@ class MyApp extends StatelessWidget {
             style: TextStyle(color: Colors.white),
           ),
         ),
-        backgroundColor: Color.fromRGBO(109, 193, 176, 0.843),
-        body: Align(
-          alignment: Alignment.topCenter,
-          child: Center(
-            child: Container(
-              padding: EdgeInsets.all(40),
-              margin: EdgeInsets.only(bottom: 20),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    "Welcome to our 'Movie Library' application!",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
+        backgroundColor: Color.fromRGBO(110, 194, 177, 1),
+        body: Center(
+          child: Container(
+            padding: EdgeInsets.all(40),
+            margin: EdgeInsets.only(bottom: 20),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Text(
+                  "Welcome to our 'Movie Library' application!",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
                   ),
-                  SizedBox(height: 20),
-                  Text(
-                    "Explore, search, and manage an extensive collection of movies. Add your favorite films, update details, and even delete entries. Your personalized movie database is just a click away!",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 20),
+                Text(
+                  "Explore, search, and manage an extensive collection of movies. Add your favorite films, update details, and even delete entries. Your personalized movie database is just a click away!",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
                   ),
-                ],
-              ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 20),
+                // Add your form or any other widget here
+                Form(
+                  // Your form implementation goes here
+                  child: Column(
+                    children: [
+                      TextFormField(
+                        // Your form field
+                        decoration: InputDecoration(
+                          labelText: 'Enter your data',
+                        ),
+                      ),
+                      // Add more form fields or other widgets as needed
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
         ),
