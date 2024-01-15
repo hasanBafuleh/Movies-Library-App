@@ -48,19 +48,32 @@ class MyApp extends StatelessWidget {
                   textAlign: TextAlign.center,
                 ),
                 SizedBox(height: 20),
-                // Add your form or any other widget here
-                Form(
-                  // Your form implementation goes here
-                  child: Column(
-                    children: [
-                      TextFormField(
-                        // Your form field
-                        decoration: InputDecoration(
-                          labelText: 'Enter your data',
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: SizedBox(
+                    width: 200,
+                    child: TextField(
+                      style: TextStyle(color: Colors.white),
+                      decoration: InputDecoration(
+                        hintText: 'Search',
+                        hintStyle: TextStyle(color: Colors.grey[800]),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(
+                              color: Color.fromRGBO(4, 66, 61, 0.843)),
+                        ),
+                        filled: true,
+                        fillColor: Colors.white,
+                        contentPadding: EdgeInsets.symmetric(horizontal: 10),
+                        suffixIcon: IconButton(
+                          icon: Icon(Icons.search),
+                          onPressed: () {
+                            // Handle search functionality
+                          },
+                          color: Color.fromRGBO(4, 66, 61, 0.843),
                         ),
                       ),
-                      // Add more form fields or other widgets as needed
-                    ],
+                    ),
                   ),
                 ),
               ],
