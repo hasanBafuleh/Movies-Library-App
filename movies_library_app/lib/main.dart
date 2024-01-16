@@ -1,6 +1,7 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, avoid_print, use_key_in_widget_constructors
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 // ignore: unused_import
 import 'package:http/http.dart' as http;
 
@@ -163,6 +164,10 @@ class _MyHomePageState extends State<MyHomePage> {
                               ),
                               contentPadding: EdgeInsets.all(8.0),
                             ),
+                            keyboardType: TextInputType.number,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                            ],
                             validator: (String? value) {
                               return null;
                             },
@@ -276,6 +281,10 @@ class CastMemberInput extends StatelessWidget {
                 ),
                 contentPadding: EdgeInsets.all(8.0),
               ),
+              keyboardType: TextInputType.number,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+              ],
             ),
           ),
         ),
