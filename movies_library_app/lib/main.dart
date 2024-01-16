@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, avoid_print
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, avoid_print, use_key_in_widget_constructors
 
 import 'package:flutter/material.dart';
 // ignore: unused_import
@@ -125,9 +125,14 @@ class _MyHomePageState extends State<MyHomePage> {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
+                          SizedBox(height: 20),
                           TextFormField(
-                            decoration: const InputDecoration(
-                              hintText: 'Title',
+                            decoration: InputDecoration(
+                              labelText: 'Title',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              contentPadding: EdgeInsets.all(8.0),
                             ),
                             validator: (String? value) {
                               if (value == null || value.isEmpty) {
@@ -136,35 +141,71 @@ class _MyHomePageState extends State<MyHomePage> {
                               return null;
                             },
                           ),
+                          SizedBox(height: 10),
                           TextFormField(
-                            decoration: const InputDecoration(
-                              hintText: 'Description',
-                            ),
-                          ),
-                          TextFormField(
-                            decoration: const InputDecoration(
-                              hintText: 'Release Year',
-                            ),
-                            validator: (String? value) {
-                              return null;
-                            },
-                          ),
-                          TextFormField(
-                            decoration: const InputDecoration(
-                              hintText: 'Genre',
+                            decoration: InputDecoration(
+                              labelText: 'Description',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              contentPadding: EdgeInsets.all(8.0),
                             ),
                             validator: (String? value) {
                               return null;
                             },
                           ),
+                          SizedBox(height: 10),
                           TextFormField(
-                            decoration: const InputDecoration(
-                              hintText: 'Director',
+                            decoration: InputDecoration(
+                              labelText: 'Release Year',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              contentPadding: EdgeInsets.all(8.0),
                             ),
                             validator: (String? value) {
                               return null;
                             },
                           ),
+                          SizedBox(height: 10),
+                          TextFormField(
+                            decoration: InputDecoration(
+                              labelText: 'Genre',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              contentPadding: EdgeInsets.all(8.0),
+                            ),
+                            validator: (String? value) {
+                              return null;
+                            },
+                          ),
+                          SizedBox(height: 10),
+                          TextFormField(
+                            decoration: InputDecoration(
+                              labelText: 'Director',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              contentPadding: EdgeInsets.all(8.0),
+                            ),
+                            validator: (String? value) {
+                              return null;
+                            },
+                          ),
+                          SizedBox(height: 20),
+                          Text(
+                            "Cast",
+                            style: TextStyle(
+                              color: Color.fromRGBO(4, 66, 61, 0.843),
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(height: 10),
+                          CastMemberInput(),
+                          CastMemberInput(),
+                          CastMemberInput(),
                           Center(
                             child: Padding(
                               padding:
@@ -201,6 +242,58 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class CastMemberInput extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.all(5.0),
+            child: TextField(
+              decoration: InputDecoration(
+                labelText: 'Name',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                contentPadding: EdgeInsets.all(8.0),
+              ),
+            ),
+          ),
+        ),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.all(5.0),
+            child: TextField(
+              decoration: InputDecoration(
+                labelText: 'Age',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                contentPadding: EdgeInsets.all(8.0),
+              ),
+            ),
+          ),
+        ),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.all(5.0),
+            child: TextField(
+              decoration: InputDecoration(
+                labelText: 'Country',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                contentPadding: EdgeInsets.all(8.0),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
