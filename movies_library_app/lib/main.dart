@@ -64,9 +64,16 @@ class _MyHomePageState extends State<MyHomePage> {
     // Implement edit logic here
   }
 
-  // Method to handle liking a movie
-  void likeMovie(int movieId) {
-    // Implement like logic here
+// Method to handle liking a movie
+  void likeMovie(int movieId) async {
+    print("Like button clicked for movieId: $movieId");
+
+    await http.post(
+      Uri.parse("http://localhost:3000/movies/$movieId/like"),
+    );
+
+    // Refresh the UI to show updated likes
+    show();
   }
 
   // List to hold movie data
@@ -265,8 +272,9 @@ class _MyHomePageState extends State<MyHomePage> {
                             ElevatedButton.icon(
                               onPressed: () => likeMovie(movies[index]['id']),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.transparent,
-                                shadowColor: Colors.transparent,
+                                foregroundColor: Colors.white,
+                                backgroundColor:
+                                    Color.fromRGBO(4, 67, 62, 0.843),
                               ),
                               icon: Icon(Icons.thumb_up),
                               label: Text(
