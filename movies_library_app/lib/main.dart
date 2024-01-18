@@ -695,7 +695,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                     fontWeight: FontWeight.bold,
                                   ),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
+                                    borderRadius: BorderRadius.circular(
+                                        10),
                                   ),
                                 ),
                                 child: Text('Add Movie'),
