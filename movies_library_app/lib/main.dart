@@ -191,6 +191,7 @@ class _MyHomePageState extends State<MyHomePage> {
         Container(
           width: double.maxFinite,
           child: Card(
+            color: Color.fromRGBO(255, 255, 255, 1),
             margin: EdgeInsets.all(0),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
@@ -262,19 +263,30 @@ class _MyHomePageState extends State<MyHomePage> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             ElevatedButton(
-                              onPressed: () => editMovie(movies[index]['id']),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor:
-                                    Color.fromRGBO(4, 67, 62, 0.843),
-                              ),
-                              child: Text('Edit'),
-                            ),
+                                onPressed: () => editMovie(movies[index]['id']),
+                                style: ElevatedButton.styleFrom(
+                                  foregroundColor: Colors.white,
+                                  backgroundColor:
+                                      Color.fromRGBO(4, 67, 62, 0.843),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                                child: Text(
+                                  'Edit',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                  ),
+                                )),
                             ElevatedButton.icon(
                               onPressed: () => likeMovie(movies[index]['id']),
                               style: ElevatedButton.styleFrom(
                                 foregroundColor: Colors.white,
                                 backgroundColor:
                                     Color.fromRGBO(4, 67, 62, 0.843),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
                               ),
                               icon: Icon(Icons.thumb_up),
                               label: Text(
