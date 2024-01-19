@@ -4,7 +4,6 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-// ignore: unused_import
 import 'package:http/http.dart' as http;
 
 void main() {
@@ -12,9 +11,8 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({Key? key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -25,7 +23,7 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key});
+  const MyHomePage({Key? key});
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -35,11 +33,33 @@ class _MyHomePageState extends State<MyHomePage> {
   // List to hold widgets for movie details
   List<Widget> moviesDetailsWidgets = [];
 
+  int? movieId;
   @override
   void initState() {
-    // Load initial movies data
-    show();
     super.initState();
+
+    titleController = TextEditingController();
+    descriptionController = TextEditingController();
+    releaseYearController = TextEditingController();
+    genreController = TextEditingController();
+    directorController = TextEditingController();
+
+    actor1NameController = TextEditingController();
+    actor1AgeController = TextEditingController();
+    actor1CountryController = TextEditingController();
+
+    actor2NameController = TextEditingController();
+    actor2AgeController = TextEditingController();
+    actor2CountryController = TextEditingController();
+
+    actor3NameController = TextEditingController();
+    actor3AgeController = TextEditingController();
+    actor3CountryController = TextEditingController();
+
+    searchController = TextEditingController();
+    addMovieBtnController = TextEditingController();
+
+    show();
   }
 
   // Method to build a row for actor details
@@ -59,12 +79,122 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  // Method to handle movie editing
-  void editMovie(int movieId) {
-    // Implement edit logic here
+// Function to handle movie editing
+  void editMovie(int movieId) async {
+    // Fetch movie details from the server
+    final response =
+        await http.get(Uri.parse("http://localhost:3000/movies/$movieId"));
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> movieDetails = json.decode(response.body);
+
+      // Set controller values with movie details
+      titleController.text = movieDetails['title'];
+      descriptionController.text = movieDetails['description'];
+      releaseYearController.text = movieDetails['releaseYear'];
+      genreController.text = movieDetails['genre'];
+      directorController.text = movieDetails['director'];
+      actor1NameController.text = movieDetails['actorName1'];
+      actor1AgeController.text = movieDetails['actorAge1'];
+      actor1CountryController.text = movieDetails['actorCountry1'];
+      actor2NameController.text = movieDetails['actorName2'];
+      actor2AgeController.text = movieDetails['actorAge2'];
+      actor2CountryController.text = movieDetails['actorCountry2'];
+      actor3NameController.text = movieDetails['actorName3'];
+      actor3AgeController.text = movieDetails['actorAge3'];
+      actor3CountryController.text = movieDetails['actorCountry3'];
+
+      // Update the form button to indicate editing mode
+      setState(() {
+        this.movieId = movieId;
+        isEditMode = true;
+      });
+
+      // Remove listener for Add Movie button
+      addMovieBtnController.removeListener(add);
+
+      // Add listener for Update Movie button
+      addMovieBtnController.addListener(() => updateMovie(movieId));
+    }
   }
 
-// Method to handle liking a movie
+// Function to handle movie update
+  void updateMovie(int? movieId) async {
+    if (movieId == null) {
+      print('Movie ID is null');
+      return;
+    }
+
+    // Fetch the latest movie data from the server
+    await show();
+
+    // Find the movie details map in the list
+    int index = movies.indexWhere((movie) => movie['id'] == movieId);
+
+    if (index != -1) {
+      // Update the values in the movies list
+      movies[index]['title'] = titleController.text;
+      movies[index]['description'] = descriptionController.text;
+      movies[index]['releaseYear'] = releaseYearController.text;
+      movies[index]['genre'] = genreController.text;
+      movies[index]['director'] = directorController.text;
+      movies[index]['actorName1'] = actor1NameController.text;
+      movies[index]['actorAge1'] = actor1AgeController.text;
+      movies[index]['actorCountry1'] = actor1CountryController.text;
+      movies[index]['actorName2'] = actor2NameController.text;
+      movies[index]['actorAge2'] = actor2AgeController.text;
+      movies[index]['actorCountry2'] = actor2CountryController.text;
+      movies[index]['actorName3'] = actor3NameController.text;
+      movies[index]['actorAge3'] = actor3AgeController.text;
+      movies[index]['actorCountry3'] = actor3CountryController.text;
+
+      // Update the movie on the server
+      await http.put(
+        Uri.parse("http://localhost:3000/movies/$movieId"),
+        headers: {'content-type': 'application/json'},
+        body: jsonEncode(movies[index]),
+      );
+
+      // Rebuild the UI with the updated movie details
+      setState(() {
+        moviesDetailsWidgets[index] = buildMovieDetails(context, index);
+        isEditMode = false;
+      });
+
+      // Add listener for Add Movie button
+      addMovieBtnController.addListener(add);
+
+      // Remove listener for Update Movie button
+      addMovieBtnController.removeListener(() => updateMovie(movieId));
+
+      // Reset the form after updating
+      resetForm();
+
+      // Refresh the UI after updating
+      await show();
+    } else {
+      print('Movie with id $movieId not found.');
+    }
+  }
+
+  void resetForm() {
+    titleController.clear();
+    descriptionController.clear();
+    releaseYearController.clear();
+    genreController.clear();
+    directorController.clear();
+    actor1NameController.clear();
+    actor1AgeController.clear();
+    actor1CountryController.clear();
+    actor2NameController.clear();
+    actor2AgeController.clear();
+    actor2CountryController.clear();
+    actor3NameController.clear();
+    actor3AgeController.clear();
+    actor3CountryController.clear();
+  }
+
+  // Method to handle liking a movie
   void likeMovie(int movieId) async {
     print("Like button clicked for movieId: $movieId");
 
@@ -98,7 +228,11 @@ class _MyHomePageState extends State<MyHomePage> {
   var actor3AgeController = TextEditingController();
   var actor3CountryController = TextEditingController();
 
-  TextEditingController searchController = TextEditingController();
+  var searchController = TextEditingController();
+
+  TextEditingController addMovieBtnController = TextEditingController();
+
+  bool isEditMode = false;
 
   void searchMovies() {
     String searchTerm = searchController.text.toLowerCase();
@@ -127,21 +261,26 @@ class _MyHomePageState extends State<MyHomePage> {
 
     print('Response status: ${response.statusCode}');
     print('Response body: ${response.body}');
+
     setState(() {
       movies = jsonDecode(utf8.decode(response.bodyBytes));
       // Clear the existing widgets
       moviesDetailsWidgets.clear();
 
       // Populate the list with movie details widgets
-      for (int i = movies.length - 1; i >= 0; i--) {
+      for (int i = 0; i < movies.length; i++) {
         moviesDetailsWidgets.add(buildMovieDetails(context, i));
       }
+
+      // Reverse the list to display the latest movies first
+      moviesDetailsWidgets = moviesDetailsWidgets.reversed.toList();
     });
   }
 
   // Method to add a new movie
   add() async {
     if (titleController.text == "" || descriptionController.text == "") return;
+
     var response = await http.post(
       Uri.parse("http://localhost:3000/movies"),
       headers: {'content-type': 'application/json'},
@@ -165,21 +304,8 @@ class _MyHomePageState extends State<MyHomePage> {
     print('Response status: ${response.statusCode}');
     print('Response body: ${response.body}');
 
-    titleController.clear();
-    descriptionController.clear();
-    releaseYearController.clear();
-    genreController.clear();
-    directorController.clear();
-    actor1NameController.clear();
-    actor1AgeController.clear();
-    actor1CountryController.clear();
-    actor2NameController.clear();
-    actor2AgeController.clear();
-    actor2CountryController.clear();
-    actor3NameController.clear();
-    actor3AgeController.clear();
-    actor3CountryController.clear();
-
+    // Clear the form and refresh the UI to show the new movie
+    resetForm();
     show();
   }
 
@@ -263,21 +389,22 @@ class _MyHomePageState extends State<MyHomePage> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             ElevatedButton(
-                                onPressed: () => editMovie(movies[index]['id']),
-                                style: ElevatedButton.styleFrom(
-                                  foregroundColor: Colors.white,
-                                  backgroundColor:
-                                      Color.fromRGBO(4, 67, 62, 0.843),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
+                              onPressed: () => editMovie(movies[index]['id']),
+                              style: ElevatedButton.styleFrom(
+                                foregroundColor: Colors.white,
+                                backgroundColor:
+                                    Color.fromRGBO(4, 67, 62, 0.843),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
                                 ),
-                                child: Text(
-                                  'Edit',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                  ),
-                                )),
+                              ),
+                              child: Text(
+                                'Edit',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ),
                             ElevatedButton.icon(
                               onPressed: () => likeMovie(movies[index]['id']),
                               style: ElevatedButton.styleFrom(
@@ -695,14 +822,15 @@ class _MyHomePageState extends State<MyHomePage> {
                                     fontWeight: FontWeight.bold,
                                   ),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(
-                                        10),
+                                    borderRadius: BorderRadius.circular(10),
                                   ),
                                 ),
-                                child: Text('Add Movie'),
+                                child: Text(
+                                  isEditMode ? 'Update Movie' : 'Add Movie',
+                                ),
                                 onPressed: () {
                                   // Display movie details for each movie
-                                  add();
+                                  isEditMode ? updateMovie(movieId) : add();
                                 },
                               ),
                             ),
