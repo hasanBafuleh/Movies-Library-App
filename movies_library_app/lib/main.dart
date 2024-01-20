@@ -808,9 +808,8 @@ class _MyHomePageState extends State<MyHomePage> {
                           ),
                           Center(
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 16.0,
-                              ),
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 16.0),
                               child: ElevatedButton(
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor:
