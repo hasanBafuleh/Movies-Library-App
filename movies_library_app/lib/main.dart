@@ -81,6 +81,12 @@ class _MyHomePageState extends State<MyHomePage> {
 
 // Function to handle movie editing
   void editMovie(int movieId) async {
+    // Scroll to the top
+    _scrollController.animateTo(
+      0.0,
+      curve: Curves.easeInOut,
+      duration: Duration(seconds: 1),
+    );
     // Fetch movie details from the server
     final response =
         await http.get(Uri.parse("http://localhost:3000/movies/$movieId"));
@@ -229,6 +235,7 @@ class _MyHomePageState extends State<MyHomePage> {
   var actor3CountryController = TextEditingController();
 
   var searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
 
   TextEditingController addMovieBtnController = TextEditingController();
 
@@ -470,8 +477,8 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ),
         backgroundColor: Color.fromRGBO(110, 194, 177, 1),
-        body: SingleChildScrollView(
-          child: Center(
+        body: ListView(controller: _scrollController, children: [
+          Center(
             child: Container(
               padding: EdgeInsets.all(25),
               margin: EdgeInsets.only(bottom: 20),
@@ -845,7 +852,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
           ),
-        ),
+        ]),
       ),
     );
   }
