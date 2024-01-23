@@ -10,6 +10,97 @@ void main() {
   runApp(MyApp());
 }
 
+class CommentForm extends StatefulWidget {
+  final int movieId;
+
+  const CommentForm({required this.movieId});
+
+  @override
+  // ignore: library_private_types_in_public_api
+  _CommentFormState createState() => _CommentFormState();
+}
+
+class _CommentFormState extends State<CommentForm> {
+  TextEditingController commentController = TextEditingController();
+
+  // Define the postComment method
+  void postComment(int movieId, String comment) {
+    // Implement the logic to post a comment to the server
+    // You can use http.post or any other method to send the comment to your backend
+    print('Posting comment for movieId $movieId: $comment');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: TextFormField(
+              controller: commentController,
+              decoration: InputDecoration(
+                labelText: 'Add a comment',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                contentPadding: EdgeInsets.all(8.0),
+              ),
+            ),
+          ),
+          Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              child: ElevatedButton(
+                onPressed: () {
+                  postComment(widget.movieId, commentController.text);
+                  // Clear the comment text field after posting
+                  commentController.clear();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Color.fromRGBO(4, 66, 61, 0.843),
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(horizontal: 85, vertical: 15),
+                  textStyle: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: Text('Post a Comment'),
+              )),
+        ],
+      ),
+    );
+  }
+}
+
+class CommentList extends StatelessWidget {
+  final int movieId;
+
+  const CommentList({required this.movieId});
+
+  @override
+  Widget build(BuildContext context) {
+    // Fetch comments based on the movieId and display them
+    // You need to replace the following with the actual logic to fetch comments
+    List<String> comments = ['Comment 1', 'Comment 2', 'Comment 3'];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (var comment in comments)
+          Container(
+            margin: EdgeInsets.symmetric(vertical: 8),
+            child: Text(comment),
+          ),
+      ],
+    );
+  }
+}
+
 class MyApp extends StatelessWidget {
   const MyApp({Key? key});
 
@@ -441,10 +532,11 @@ class _MyHomePageState extends State<MyHomePage> {
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.grey,
+                                  color: Color.fromARGB(255, 95, 95, 95),
                                 ),
                               ),
-                              // Add comment form and list here
+                              CommentForm(movieId: movies[index]['id']),
+                              CommentList(movieId: movies[index]['id']),
                             ],
                           ),
                         ),
@@ -822,7 +914,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                   backgroundColor:
                                       Color.fromRGBO(4, 66, 61, 0.843),
                                   foregroundColor: Colors.white,
-                                  padding: EdgeInsets.all(15),
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 125, vertical: 15),
                                   textStyle: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
