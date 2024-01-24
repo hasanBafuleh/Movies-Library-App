@@ -37,40 +37,46 @@ class _CommentFormState extends State<CommentForm> {
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            child: TextFormField(
-              controller: commentController,
-              decoration: InputDecoration(
-                labelText: 'Add a comment',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                contentPadding: EdgeInsets.all(8.0),
-              ),
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Container(
+              width: double.infinity,
+              child: TextFormField(
+                  controller: commentController,
+                  decoration: InputDecoration(
+                    labelText: 'Add a comment',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    contentPadding: EdgeInsets.all(8.0),
+                  )),
             ),
           ),
           Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              child: ElevatedButton(
-                onPressed: () {
-                  postComment(widget.movieId, commentController.text);
-                  // Clear the comment text field after posting
-                  commentController.clear();
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Color.fromRGBO(4, 66, 61, 0.843),
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(horizontal: 85, vertical: 15),
-                  textStyle: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Container(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    postComment(widget.movieId, commentController.text);
+                    // Clear the comment text field after posting
+                    commentController.clear();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color.fromRGBO(4, 66, 61, 0.843),
+                    foregroundColor: Colors.white,
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 100, vertical: 15),
+                    textStyle: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                child: Text('Post a Comment'),
-              )),
+                  child: Text('Post a Comment'),
+                )),
+          )
         ],
       ),
     );
@@ -409,151 +415,160 @@ class _MyHomePageState extends State<MyHomePage> {
 
   // Method to build the details widget for a movie
   Widget buildMovieDetails(BuildContext context, int index) {
-    return Column(
-      children: [
-        SizedBox(height: 20),
-        Container(
-          width: double.maxFinite,
-          child: Card(
-            color: Color.fromRGBO(255, 255, 255, 1),
-            margin: EdgeInsets.all(0),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-              side: BorderSide(
-                color: Color.fromRGBO(4, 67, 62, 0.843),
-                width: 3,
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          SizedBox(height: 20),
+          Container(
+            width: double.maxFinite,
+            child: Card(
+              color: Color.fromRGBO(255, 255, 255, 1),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+                side: BorderSide(
+                  color: Color.fromRGBO(4, 67, 62, 0.843),
+                  width: 3,
+                ),
               ),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(15),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          movies[index]['title'],
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        SizedBox(height: 10),
-                        Text(
-                          'Description: ${movies[index]['description']}',
-                          style: TextStyle(fontSize: 16),
-                        ),
-                        SizedBox(height: 10),
-                        Text(
-                          'Release Year: ${movies[index]['releaseYear']}',
-                          style: TextStyle(fontSize: 16),
-                        ),
-                        Text(
-                          'Genre: ${movies[index]['genre']}',
-                          style: TextStyle(fontSize: 16),
-                        ),
-                        Text(
-                          'Director: ${movies[index]['director']}',
-                          style: TextStyle(fontSize: 16),
-                        ),
-                        SizedBox(height: 10),
-                        Text(
-                          'Cast',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Color.fromRGBO(4, 67, 62, 0.843),
-                          ),
-                        ),
-                        buildActorRow(
-                          movies[index]['actorName1'],
-                          movies[index]['actorAge1'],
-                          movies[index]['actorCountry1'],
-                        ),
-                        buildActorRow(
-                          movies[index]['actorName2'],
-                          movies[index]['actorAge2'],
-                          movies[index]['actorCountry2'],
-                        ),
-                        buildActorRow(
-                          movies[index]['actorName3'],
-                          movies[index]['actorAge3'],
-                          movies[index]['actorCountry3'],
-                        ),
-                        SizedBox(height: 10),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            ElevatedButton(
-                              onPressed: () => editMovie(movies[index]['id']),
-                              style: ElevatedButton.styleFrom(
-                                foregroundColor: Colors.white,
-                                backgroundColor:
-                                    Color.fromRGBO(4, 67, 62, 0.843),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                              ),
-                              child: Text(
-                                'Edit',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ),
-                            ElevatedButton.icon(
-                              onPressed: () => likeMovie(movies[index]['id']),
-                              style: ElevatedButton.styleFrom(
-                                foregroundColor: Colors.white,
-                                backgroundColor:
-                                    Color.fromRGBO(4, 67, 62, 0.843),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                              ),
-                              icon: Icon(Icons.thumb_up),
-                              label: Text(
-                                movies[index]['likes'].toString(),
-                                style: TextStyle(fontSize: 16),
-                              ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 10),
-                        Container(
-                          margin: EdgeInsets.only(top: 10),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+              child: Padding(
+                padding: EdgeInsets.all(16),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                'Comments',
+                                movies[index]['title'],
                                 style: TextStyle(
-                                  fontSize: 18,
+                                  fontSize: 20,
                                   fontWeight: FontWeight.bold,
-                                  color: Color.fromARGB(255, 95, 95, 95),
                                 ),
                               ),
-                              CommentForm(movieId: movies[index]['id']),
-                              CommentList(movieId: movies[index]['id']),
+                              Spacer(),
+                              IconButton(
+                                icon: Icon(Icons.close),
+                                onPressed: () =>
+                                    deleteMovie(movies[index]['id']),
+                                color: Colors.red,
+                              ),
                             ],
                           ),
-                        ),
-                      ],
+                          SizedBox(height: 10),
+                          Text(
+                            'Description: ${movies[index]['description']}',
+                            style: TextStyle(fontSize: 16),
+                          ),
+                          SizedBox(height: 10),
+                          Text(
+                            'Release Year: ${movies[index]['releaseYear']}',
+                            style: TextStyle(fontSize: 16),
+                          ),
+                          Text(
+                            'Genre: ${movies[index]['genre']}',
+                            style: TextStyle(fontSize: 16),
+                          ),
+                          Text(
+                            'Director: ${movies[index]['director']}',
+                            style: TextStyle(fontSize: 16),
+                          ),
+                          SizedBox(height: 10),
+                          Text(
+                            'Cast',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Color.fromRGBO(4, 67, 62, 0.843),
+                            ),
+                          ),
+                          buildActorRow(
+                            movies[index]['actorName1'],
+                            movies[index]['actorAge1'],
+                            movies[index]['actorCountry1'],
+                          ),
+                          buildActorRow(
+                            movies[index]['actorName2'],
+                            movies[index]['actorAge2'],
+                            movies[index]['actorCountry2'],
+                          ),
+                          buildActorRow(
+                            movies[index]['actorName3'],
+                            movies[index]['actorAge3'],
+                            movies[index]['actorCountry3'],
+                          ),
+                          SizedBox(height: 10),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              ElevatedButton(
+                                onPressed: () => editMovie(movies[index]['id']),
+                                style: ElevatedButton.styleFrom(
+                                  foregroundColor: Colors.white,
+                                  backgroundColor:
+                                      Color.fromRGBO(4, 67, 62, 0.843),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                                child: Text(
+                                  'Edit',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ),
+                              ElevatedButton.icon(
+                                onPressed: () => likeMovie(movies[index]['id']),
+                                style: ElevatedButton.styleFrom(
+                                  foregroundColor: Colors.white,
+                                  backgroundColor:
+                                      Color.fromRGBO(4, 67, 62, 0.843),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                                icon: Icon(Icons.thumb_up),
+                                label: Text(
+                                  movies[index]['likes'].toString(),
+                                  style: TextStyle(fontSize: 16),
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 10),
+                          Container(
+                            margin: EdgeInsets.only(top: 10),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Comments',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color.fromARGB(255, 95, 95, 95),
+                                  ),
+                                ),
+                                CommentForm(movieId: movies[index]['id']),
+                                CommentList(movieId: movies[index]['id']),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.close),
-                    onPressed: () => deleteMovie(movies[index]['id']),
-                    color: Colors.red,
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
