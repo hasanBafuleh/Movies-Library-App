@@ -10,168 +10,6 @@ void main() {
   runApp(MyApp());
 }
 
-class CommentForm extends StatefulWidget {
-  final int movieId;
-  final VoidCallback onCommentPosted; // Define the callback
-
-  const CommentForm({required this.movieId, required this.onCommentPosted});
-
-  @override
-  _CommentFormState createState() => _CommentFormState();
-}
-
-class _CommentFormState extends State<CommentForm> {
-  TextEditingController commentController = TextEditingController();
-
-  // Define the postComment method
-  void postComment(int movieId, String comment) async {
-    // Send the comment to the server
-    final response = await http.post(
-      Uri.parse('http://localhost:3000/comments/$movieId'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'text': comment}),
-    );
-
-    if (response.statusCode == 200) {
-      print('Comment posted successfully');
-      // Invoke the callback to refresh comments
-      widget.onCommentPosted();
-      commentController.clear();
-    } else {
-      print('Failed to post comment. Status code: ${response.statusCode}');
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Container(
-              width: double.infinity,
-              child: TextFormField(
-                controller: commentController,
-                decoration: InputDecoration(
-                  labelText: 'Add a comment',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  contentPadding: EdgeInsets.all(8.0),
-                ),
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Container(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  postComment(widget.movieId, commentController.text);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Color.fromRGBO(4, 66, 61, 0.843),
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(vertical: 15),
-                  textStyle: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                child: Text('Post a Comment'),
-              ),
-            ),
-          )
-        ],
-      ),
-    );
-  }
-}
-
-class CommentList extends StatefulWidget {
-  final int movieId;
-
-  const CommentList({required this.movieId});
-
-  @override
-  _CommentListState createState() => _CommentListState();
-}
-
-Future<List<String>> fetchComments(int movieId) async {
-  final response =
-      await http.get(Uri.parse('http://localhost:3000/comments/$movieId'));
-  if (response.statusCode == 200) {
-    final List<dynamic> data = json.decode(response.body);
-    return data.map((comment) => comment['text'].toString()).toList();
-  } else {
-    throw Exception('Failed to fetch comments');
-  }
-}
-
-class _CommentListState extends State<CommentList> {
-  late Future<List<String>> comments;
-
-  // Update comments when called
-
-  @override
-  void initState() {
-    super.initState();
-    comments = Future.value([]);
-    // Fetch comments when the widget is initialized
-    updateComments();
-  }
-
-  Future<void> updateComments() async {
-    // Fetch comments and update the state
-    setState(() {
-      comments = fetchComments(widget.movieId);
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        CommentForm(
-          movieId: widget.movieId,
-          // Pass the callback to refresh comments
-          onCommentPosted: updateComments,
-        ),
-        SizedBox(height: 10),
-        FutureBuilder<List<String>>(
-          future: comments,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return CircularProgressIndicator();
-            } else if (snapshot.hasError) {
-              return Text('Error: ${snapshot.error}');
-            } else {
-              final List<String> comments = snapshot.data ?? [];
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  for (var comment in comments)
-                    Container(
-                      margin: EdgeInsets.symmetric(vertical: 8),
-                      child: Text(comment),
-                    ),
-                ],
-              );
-            }
-          },
-        ),
-      ],
-    );
-  }
-}
-
 class MyApp extends StatelessWidget {
   const MyApp({Key? key});
 
@@ -195,7 +33,36 @@ class _MyHomePageState extends State<MyHomePage> {
   // List to hold widgets for movie details
   List<Widget> moviesDetailsWidgets = [];
 
+  // Controllers for text fields
+  var titleController = TextEditingController();
+  var descriptionController = TextEditingController();
+  var releaseYearController = TextEditingController();
+  var genreController = TextEditingController();
+  var directorController = TextEditingController();
+
+  var actor1NameController = TextEditingController();
+  var actor1AgeController = TextEditingController();
+  var actor1CountryController = TextEditingController();
+
+  var actor2NameController = TextEditingController();
+  var actor2AgeController = TextEditingController();
+  var actor2CountryController = TextEditingController();
+
+  var actor3NameController = TextEditingController();
+  var actor3AgeController = TextEditingController();
+  var actor3CountryController = TextEditingController();
+
+  var searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+
+  TextEditingController addMovieBtnController = TextEditingController();
+
+  TextEditingController commentController = TextEditingController();
+
+  bool isEditMode = false;
+
   int? movieId;
+
   @override
   void initState() {
     super.initState();
@@ -374,34 +241,14 @@ class _MyHomePageState extends State<MyHomePage> {
     show();
   }
 
+  void deleteMovie(int movieId) async {
+    // Implement logic to delete the movie from the database and update UI
+    await http.delete(Uri.parse("http://localhost:3000/movies/$movieId"));
+    show();
+  }
+
   // List to hold movie data
   List movies = [];
-
-  // Controllers for text fields
-  var titleController = TextEditingController();
-  var descriptionController = TextEditingController();
-  var releaseYearController = TextEditingController();
-  var genreController = TextEditingController();
-  var directorController = TextEditingController();
-
-  var actor1NameController = TextEditingController();
-  var actor1AgeController = TextEditingController();
-  var actor1CountryController = TextEditingController();
-
-  var actor2NameController = TextEditingController();
-  var actor2AgeController = TextEditingController();
-  var actor2CountryController = TextEditingController();
-
-  var actor3NameController = TextEditingController();
-  var actor3AgeController = TextEditingController();
-  var actor3CountryController = TextEditingController();
-
-  var searchController = TextEditingController();
-  final ScrollController _scrollController = ScrollController();
-
-  TextEditingController addMovieBtnController = TextEditingController();
-
-  bool isEditMode = false;
 
   void searchMovies() {
     String searchTerm = searchController.text.toLowerCase();
@@ -418,14 +265,49 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  void deleteMovie(int movieId) async {
-    // Implement logic to delete the movie from the database and update UI
-    await http.delete(Uri.parse("http://localhost:3000/movies/$movieId"));
-    show();
+  // Method to handle posting a comment
+  void postComment(int movieId, String comment) async {
+    // Send the comment to the server
+    final response = await http.post(
+      Uri.parse('http://localhost:3000/comments/$movieId'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'text': comment}),
+    );
+
+    if (response.statusCode == 200) {
+      print('Comment posted successfully');
+      // Invoke the callback to refresh comments
+      updateComments(movieId);
+      commentController.clear();
+    } else {
+      print('Failed to post comment. Status code: ${response.statusCode}');
+    }
+  }
+
+  Future<List<String>> fetchComments(int movieId) async {
+    final response =
+        await http.get(Uri.parse('http://localhost:3000/comments/$movieId'));
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+      return data.map((comment) => comment['text'].toString()).toList();
+    } else {
+      throw Exception('Failed to fetch comments');
+    }
+  }
+
+  List<String> comments = []; // Add this line before using 'comments'
+
+  Future<void> updateComments(int movieId) async {
+    // Fetch comments and update the state
+    List<String> fetchedComments = await fetchComments(movieId);
+
+    setState(() {
+      comments = fetchedComments;
+    });
   }
 
   // Method to fetch movie data from the server
-  show() async {
+  Future<void> show() async {
     var response = await http.get(Uri.parse("http://localhost:3000/movies"));
 
     print('Response status: ${response.statusCode}');
@@ -446,7 +328,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   // Method to add a new movie
-  add() async {
+  void add() async {
     if (titleController.text == "") return;
 
     var response = await http.post(
@@ -618,9 +500,81 @@ class _MyHomePageState extends State<MyHomePage> {
                                     color: Color.fromARGB(255, 95, 95, 95),
                                   ),
                                 ),
-                                CommentList(movieId: movies[index]['id']),
+                                Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 8),
+                                  child: Container(
+                                    width: double.infinity,
+                                    child: TextFormField(
+                                      controller: commentController,
+                                      decoration: InputDecoration(
+                                        labelText: 'Add a comment',
+                                        border: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                        ),
+                                        contentPadding: EdgeInsets.all(8.0),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 8),
+                                  child: Container(
+                                    width: double.infinity,
+                                    child: ElevatedButton(
+                                      onPressed: () {
+                                        postComment(movies[index]['id'],
+                                            commentController.text);
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor:
+                                            Color.fromRGBO(4, 66, 61, 0.843),
+                                        foregroundColor: Colors.white,
+                                        padding:
+                                            EdgeInsets.symmetric(vertical: 15),
+                                        textStyle: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                        ),
+                                      ),
+                                      child: Text('Post a Comment'),
+                                    ),
+                                  ),
+                                )
                               ],
                             ),
+                          ),
+                          SizedBox(height: 10),
+                          FutureBuilder<List<String>>(
+                            future: fetchComments(movies[index]['id']),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return CircularProgressIndicator();
+                              } else if (snapshot.hasError) {
+                                return Text('Error: ${snapshot.error}');
+                              } else {
+                                final List<String> comments =
+                                    snapshot.data ?? [];
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    for (var comment in comments)
+                                      Container(
+                                        margin:
+                                            EdgeInsets.symmetric(vertical: 8),
+                                        child: Text(comment),
+                                      ),
+                                  ],
+                                );
+                              }
+                            },
                           ),
                         ],
                       ),
@@ -985,33 +939,34 @@ class _MyHomePageState extends State<MyHomePage> {
                           ),
                           Center(
                             child: Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 16.0),
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor:
-                                      Color.fromRGBO(4, 66, 61, 0.843),
-                                  foregroundColor: Colors.white,
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: 125, vertical: 15),
-                                  textStyle: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              child: Container(
+                                width: double.infinity,
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor:
+                                        Color.fromRGBO(4, 66, 61, 0.843),
+                                    foregroundColor: Colors.white,
+                                    padding: EdgeInsets.symmetric(vertical: 15),
+                                    textStyle: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
                                   ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
+                                  child: Text(
+                                    isEditMode ? 'Update Movie' : 'Add Movie',
                                   ),
+                                  onPressed: () {
+                                    // Display movie details for each movie
+                                    isEditMode ? updateMovie(movieId) : add();
+                                  },
                                 ),
-                                child: Text(
-                                  isEditMode ? 'Update Movie' : 'Add Movie',
-                                ),
-                                onPressed: () {
-                                  // Display movie details for each movie
-                                  isEditMode ? updateMovie(movieId) : add();
-                                },
                               ),
                             ),
-                          ),
+                          )
                         ],
                       ),
                     ),
