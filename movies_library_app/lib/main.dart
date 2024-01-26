@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, avoid_print, use_key_in_widget_constructors, sized_box_for_whitespace
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, avoid_print, use_key_in_widget_constructors, sized_box_for_whitespace, library_private_types_in_public_api
 
 import 'dart:convert';
 
@@ -12,11 +12,11 @@ void main() {
 
 class CommentForm extends StatefulWidget {
   final int movieId;
+  final VoidCallback onCommentPosted; // Define the callback
 
-  const CommentForm({required this.movieId});
+  const CommentForm({required this.movieId, required this.onCommentPosted});
 
   @override
-  // ignore: library_private_types_in_public_api
   _CommentFormState createState() => _CommentFormState();
 }
 
@@ -24,10 +24,23 @@ class _CommentFormState extends State<CommentForm> {
   TextEditingController commentController = TextEditingController();
 
   // Define the postComment method
-  void postComment(int movieId, String comment) {
-    // Implement the logic to post a comment to the server
-    // You can use http.post or any other method to send the comment to your backend
-    print('Posting comment for movieId $movieId: $comment');
+  void postComment(int movieId, String comment) async {
+    // Send the comment to the server
+    final response = await http.post(
+      Uri.parse('http://localhost:3000/comments/$movieId'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'text': comment}),
+    );
+
+    if (response.statusCode == 200) {
+      print('Comment posted successfully');
+      // Invoke the callback to refresh comments
+      widget.onCommentPosted();
+      // Clear the comment text field
+      commentController.clear();
+    } else {
+      print('Failed to post comment. Status code: ${response.statusCode}');
+    }
   }
 
   @override
@@ -41,41 +54,40 @@ class _CommentFormState extends State<CommentForm> {
             child: Container(
               width: double.infinity,
               child: TextFormField(
-                  controller: commentController,
-                  decoration: InputDecoration(
-                    labelText: 'Add a comment',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    contentPadding: EdgeInsets.all(8.0),
-                  )),
+                controller: commentController,
+                decoration: InputDecoration(
+                  labelText: 'Add a comment',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  contentPadding: EdgeInsets.all(8.0),
+                ),
+              ),
             ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
             child: Container(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    postComment(widget.movieId, commentController.text);
-                    // Clear the comment text field after posting
-                    commentController.clear();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Color.fromRGBO(4, 66, 61, 0.843),
-                    foregroundColor: Colors.white,
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 100, vertical: 15),
-                    textStyle: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  postComment(widget.movieId, commentController.text);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Color.fromRGBO(4, 66, 61, 0.843),
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(vertical: 15),
+                  textStyle: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
                   ),
-                  child: Text('Post a Comment'),
-                )),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: Text('Post a Comment'),
+              ),
+            ),
           )
         ],
       ),
@@ -83,25 +95,79 @@ class _CommentFormState extends State<CommentForm> {
   }
 }
 
-class CommentList extends StatelessWidget {
+class CommentList extends StatefulWidget {
   final int movieId;
 
   const CommentList({required this.movieId});
 
   @override
-  Widget build(BuildContext context) {
-    // Fetch comments based on the movieId and display them
-    // You need to replace the following with the actual logic to fetch comments
-    List<String> comments = ['Comment 1', 'Comment 2', 'Comment 3'];
+  _CommentListState createState() => _CommentListState();
+}
 
+Future<List<String>> fetchComments(int movieId) async {
+  final response =
+      await http.get(Uri.parse('http://localhost:3000/comments/$movieId'));
+  if (response.statusCode == 200) {
+    final List<dynamic> data = json.decode(response.body);
+    return data.map((comment) => comment['text'].toString()).toList();
+  } else {
+    throw Exception('Failed to fetch comments');
+  }
+}
+
+class _CommentListState extends State<CommentList> {
+  late Future<List<String>> comments;
+
+  // Update comments when called
+
+  @override
+  void initState() {
+    super.initState();
+    comments = Future.value([]);
+    // Fetch comments when the widget is initialized
+    updateComments();
+  }
+
+  Future<void> updateComments() async {
+    // Fetch comments and update the state
+    setState(() {
+      comments = fetchComments(widget.movieId);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        for (var comment in comments)
-          Container(
-            margin: EdgeInsets.symmetric(vertical: 8),
-            child: Text(comment),
-          ),
+        CommentForm(
+          movieId: widget.movieId,
+          // Pass the callback to refresh comments
+          onCommentPosted: updateComments,
+        ),
+        SizedBox(height: 10),
+        FutureBuilder<List<String>>(
+          future: comments,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return CircularProgressIndicator();
+            } else if (snapshot.hasError) {
+              return Text('Error: ${snapshot.error}');
+            } else {
+              final List<String> comments = snapshot.data ?? [];
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  for (var comment in comments)
+                    Container(
+                      margin: EdgeInsets.symmetric(vertical: 8),
+                      child: Text(comment),
+                    ),
+                ],
+              );
+            }
+          },
+        ),
       ],
     );
   }
@@ -383,7 +449,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   // Method to add a new movie
   add() async {
-    if (titleController.text == "" || descriptionController.text == "") return;
+    if (titleController.text == "") return;
 
     var response = await http.post(
       Uri.parse("http://localhost:3000/movies"),
@@ -554,7 +620,6 @@ class _MyHomePageState extends State<MyHomePage> {
                                     color: Color.fromARGB(255, 95, 95, 95),
                                   ),
                                 ),
-                                CommentForm(movieId: movies[index]['id']),
                                 CommentList(movieId: movies[index]['id']),
                               ],
                             ),
