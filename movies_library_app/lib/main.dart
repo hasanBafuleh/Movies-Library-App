@@ -36,7 +36,6 @@ class _CommentFormState extends State<CommentForm> {
       print('Comment posted successfully');
       // Invoke the callback to refresh comments
       widget.onCommentPosted();
-      // Clear the comment text field
       commentController.clear();
     } else {
       print('Failed to post comment. Status code: ${response.statusCode}');
@@ -422,7 +421,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void deleteMovie(int movieId) async {
     // Implement logic to delete the movie from the database and update UI
     await http.delete(Uri.parse("http://localhost:3000/movies/$movieId"));
-    show(); // Refresh the movie list after deletion
+    show();
   }
 
   // Method to fetch movie data from the server
@@ -434,7 +433,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
     setState(() {
       movies = jsonDecode(utf8.decode(response.bodyBytes));
-      // Clear the existing widgets
       moviesDetailsWidgets.clear();
 
       // Populate the list with movie details widgets
