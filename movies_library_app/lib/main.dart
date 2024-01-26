@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, avoid_print, use_key_in_widget_constructors, sized_box_for_whitespace
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, avoid_print, use_key_in_widget_constructors, sized_box_for_whitespace, library_private_types_in_public_api
 
 import 'dart:convert';
 
@@ -8,6 +8,168 @@ import 'package:http/http.dart' as http;
 
 void main() {
   runApp(MyApp());
+}
+
+class CommentForm extends StatefulWidget {
+  final int movieId;
+  final VoidCallback onCommentPosted; // Define the callback
+
+  const CommentForm({required this.movieId, required this.onCommentPosted});
+
+  @override
+  _CommentFormState createState() => _CommentFormState();
+}
+
+class _CommentFormState extends State<CommentForm> {
+  TextEditingController commentController = TextEditingController();
+
+  // Define the postComment method
+  void postComment(int movieId, String comment) async {
+    // Send the comment to the server
+    final response = await http.post(
+      Uri.parse('http://localhost:3000/comments/$movieId'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'text': comment}),
+    );
+
+    if (response.statusCode == 200) {
+      print('Comment posted successfully');
+      // Invoke the callback to refresh comments
+      widget.onCommentPosted();
+      commentController.clear();
+    } else {
+      print('Failed to post comment. Status code: ${response.statusCode}');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Container(
+              width: double.infinity,
+              child: TextFormField(
+                controller: commentController,
+                decoration: InputDecoration(
+                  labelText: 'Add a comment',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  contentPadding: EdgeInsets.all(8.0),
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Container(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  postComment(widget.movieId, commentController.text);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Color.fromRGBO(4, 66, 61, 0.843),
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(vertical: 15),
+                  textStyle: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: Text('Post a Comment'),
+              ),
+            ),
+          )
+        ],
+      ),
+    );
+  }
+}
+
+class CommentList extends StatefulWidget {
+  final int movieId;
+
+  const CommentList({required this.movieId});
+
+  @override
+  _CommentListState createState() => _CommentListState();
+}
+
+Future<List<String>> fetchComments(int movieId) async {
+  final response =
+      await http.get(Uri.parse('http://localhost:3000/comments/$movieId'));
+  if (response.statusCode == 200) {
+    final List<dynamic> data = json.decode(response.body);
+    return data.map((comment) => comment['text'].toString()).toList();
+  } else {
+    throw Exception('Failed to fetch comments');
+  }
+}
+
+class _CommentListState extends State<CommentList> {
+  late Future<List<String>> comments;
+
+  // Update comments when called
+
+  @override
+  void initState() {
+    super.initState();
+    comments = Future.value([]);
+    // Fetch comments when the widget is initialized
+    updateComments();
+  }
+
+  Future<void> updateComments() async {
+    // Fetch comments and update the state
+    setState(() {
+      comments = fetchComments(widget.movieId);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        CommentForm(
+          movieId: widget.movieId,
+          // Pass the callback to refresh comments
+          onCommentPosted: updateComments,
+        ),
+        SizedBox(height: 10),
+        FutureBuilder<List<String>>(
+          future: comments,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return CircularProgressIndicator();
+            } else if (snapshot.hasError) {
+              return Text('Error: ${snapshot.error}');
+            } else {
+              final List<String> comments = snapshot.data ?? [];
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  for (var comment in comments)
+                    Container(
+                      margin: EdgeInsets.symmetric(vertical: 8),
+                      child: Text(comment),
+                    ),
+                ],
+              );
+            }
+          },
+        ),
+      ],
+    );
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -259,7 +421,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void deleteMovie(int movieId) async {
     // Implement logic to delete the movie from the database and update UI
     await http.delete(Uri.parse("http://localhost:3000/movies/$movieId"));
-    show(); // Refresh the movie list after deletion
+    show();
   }
 
   // Method to fetch movie data from the server
@@ -271,7 +433,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
     setState(() {
       movies = jsonDecode(utf8.decode(response.bodyBytes));
-      // Clear the existing widgets
       moviesDetailsWidgets.clear();
 
       // Populate the list with movie details widgets
@@ -286,7 +447,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   // Method to add a new movie
   add() async {
-    if (titleController.text == "" || descriptionController.text == "") return;
+    if (titleController.text == "") return;
 
     var response = await http.post(
       Uri.parse("http://localhost:3000/movies"),
@@ -318,150 +479,159 @@ class _MyHomePageState extends State<MyHomePage> {
 
   // Method to build the details widget for a movie
   Widget buildMovieDetails(BuildContext context, int index) {
-    return Column(
-      children: [
-        SizedBox(height: 20),
-        Container(
-          width: double.maxFinite,
-          child: Card(
-            color: Color.fromRGBO(255, 255, 255, 1),
-            margin: EdgeInsets.all(0),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-              side: BorderSide(
-                color: Color.fromRGBO(4, 67, 62, 0.843),
-                width: 3,
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          SizedBox(height: 20),
+          Container(
+            width: double.maxFinite,
+            child: Card(
+              color: Color.fromRGBO(255, 255, 255, 1),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+                side: BorderSide(
+                  color: Color.fromRGBO(4, 67, 62, 0.843),
+                  width: 3,
+                ),
               ),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(15),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          movies[index]['title'],
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        SizedBox(height: 10),
-                        Text(
-                          'Description: ${movies[index]['description']}',
-                          style: TextStyle(fontSize: 16),
-                        ),
-                        SizedBox(height: 10),
-                        Text(
-                          'Release Year: ${movies[index]['releaseYear']}',
-                          style: TextStyle(fontSize: 16),
-                        ),
-                        Text(
-                          'Genre: ${movies[index]['genre']}',
-                          style: TextStyle(fontSize: 16),
-                        ),
-                        Text(
-                          'Director: ${movies[index]['director']}',
-                          style: TextStyle(fontSize: 16),
-                        ),
-                        SizedBox(height: 10),
-                        Text(
-                          'Cast',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Color.fromRGBO(4, 67, 62, 0.843),
-                          ),
-                        ),
-                        buildActorRow(
-                          movies[index]['actorName1'],
-                          movies[index]['actorAge1'],
-                          movies[index]['actorCountry1'],
-                        ),
-                        buildActorRow(
-                          movies[index]['actorName2'],
-                          movies[index]['actorAge2'],
-                          movies[index]['actorCountry2'],
-                        ),
-                        buildActorRow(
-                          movies[index]['actorName3'],
-                          movies[index]['actorAge3'],
-                          movies[index]['actorCountry3'],
-                        ),
-                        SizedBox(height: 10),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            ElevatedButton(
-                              onPressed: () => editMovie(movies[index]['id']),
-                              style: ElevatedButton.styleFrom(
-                                foregroundColor: Colors.white,
-                                backgroundColor:
-                                    Color.fromRGBO(4, 67, 62, 0.843),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                              ),
-                              child: Text(
-                                'Edit',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ),
-                            ElevatedButton.icon(
-                              onPressed: () => likeMovie(movies[index]['id']),
-                              style: ElevatedButton.styleFrom(
-                                foregroundColor: Colors.white,
-                                backgroundColor:
-                                    Color.fromRGBO(4, 67, 62, 0.843),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                              ),
-                              icon: Icon(Icons.thumb_up),
-                              label: Text(
-                                movies[index]['likes'].toString(),
-                                style: TextStyle(fontSize: 16),
-                              ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 10),
-                        Container(
-                          margin: EdgeInsets.only(top: 10),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+              child: Padding(
+                padding: EdgeInsets.all(16),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                'Comments',
+                                movies[index]['title'],
                                 style: TextStyle(
-                                  fontSize: 18,
+                                  fontSize: 20,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.grey,
                                 ),
                               ),
-                              // Add comment form and list here
+                              Spacer(),
+                              IconButton(
+                                icon: Icon(Icons.close),
+                                onPressed: () =>
+                                    deleteMovie(movies[index]['id']),
+                                color: Colors.red,
+                              ),
                             ],
                           ),
-                        ),
-                      ],
+                          SizedBox(height: 10),
+                          Text(
+                            'Description: ${movies[index]['description']}',
+                            style: TextStyle(fontSize: 16),
+                          ),
+                          SizedBox(height: 10),
+                          Text(
+                            'Release Year: ${movies[index]['releaseYear']}',
+                            style: TextStyle(fontSize: 16),
+                          ),
+                          Text(
+                            'Genre: ${movies[index]['genre']}',
+                            style: TextStyle(fontSize: 16),
+                          ),
+                          Text(
+                            'Director: ${movies[index]['director']}',
+                            style: TextStyle(fontSize: 16),
+                          ),
+                          SizedBox(height: 10),
+                          Text(
+                            'Cast',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Color.fromRGBO(4, 67, 62, 0.843),
+                            ),
+                          ),
+                          buildActorRow(
+                            movies[index]['actorName1'],
+                            movies[index]['actorAge1'],
+                            movies[index]['actorCountry1'],
+                          ),
+                          buildActorRow(
+                            movies[index]['actorName2'],
+                            movies[index]['actorAge2'],
+                            movies[index]['actorCountry2'],
+                          ),
+                          buildActorRow(
+                            movies[index]['actorName3'],
+                            movies[index]['actorAge3'],
+                            movies[index]['actorCountry3'],
+                          ),
+                          SizedBox(height: 10),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              ElevatedButton(
+                                onPressed: () => editMovie(movies[index]['id']),
+                                style: ElevatedButton.styleFrom(
+                                  foregroundColor: Colors.white,
+                                  backgroundColor:
+                                      Color.fromRGBO(4, 67, 62, 0.843),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                                child: Text(
+                                  'Edit',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ),
+                              ElevatedButton.icon(
+                                onPressed: () => likeMovie(movies[index]['id']),
+                                style: ElevatedButton.styleFrom(
+                                  foregroundColor: Colors.white,
+                                  backgroundColor:
+                                      Color.fromRGBO(4, 67, 62, 0.843),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                                icon: Icon(Icons.thumb_up),
+                                label: Text(
+                                  movies[index]['likes'].toString(),
+                                  style: TextStyle(fontSize: 16),
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 10),
+                          Container(
+                            margin: EdgeInsets.only(top: 10),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Comments',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color.fromARGB(255, 95, 95, 95),
+                                  ),
+                                ),
+                                CommentList(movieId: movies[index]['id']),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.close),
-                    onPressed: () => deleteMovie(movies[index]['id']),
-                    color: Colors.red,
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -822,7 +992,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                   backgroundColor:
                                       Color.fromRGBO(4, 66, 61, 0.843),
                                   foregroundColor: Colors.white,
-                                  padding: EdgeInsets.all(15),
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 125, vertical: 15),
                                   textStyle: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
