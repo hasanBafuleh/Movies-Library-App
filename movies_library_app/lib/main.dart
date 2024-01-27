@@ -265,7 +265,7 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  // Method to handle posting a comment
+// Method to handle posting a comment
   void postComment(int movieId, String comment) async {
     // Send the comment to the server
     final response = await http.post(
@@ -276,8 +276,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
     if (response.statusCode == 200) {
       print('Comment posted successfully');
+
       // Invoke the callback to refresh comments
-      updateComments(movieId);
+      updateComments(movieId, comment); // Pass the new comment here
       commentController.clear();
     } else {
       print('Failed to post comment. Status code: ${response.statusCode}');
@@ -297,13 +298,19 @@ class _MyHomePageState extends State<MyHomePage> {
 
   List<String> comments = []; // Add this line before using 'comments'
 
-  Future<void> updateComments(int movieId) async {
+  Future<void> updateComments(int movieId, String newComment) async {
+    print('Updating comments for movieId: $movieId, newComment: $newComment');
+
     // Fetch comments and update the state
     List<String> fetchedComments = await fetchComments(movieId);
 
+    print('Fetched comments: $fetchedComments');
+
     setState(() {
-      comments = fetchedComments;
+      comments = [...fetchedComments.reversed, newComment];
     });
+
+    show();
   }
 
   // Method to fetch movie data from the server
@@ -560,18 +567,36 @@ class _MyHomePageState extends State<MyHomePage> {
                               } else if (snapshot.hasError) {
                                 return Text('Error: ${snapshot.error}');
                               } else {
-                                final List<String> comments =
+                                final List<String> fetchedComments =
                                     snapshot.data ?? [];
-                                return Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    for (var comment in comments)
-                                      Container(
-                                        margin:
-                                            EdgeInsets.symmetric(vertical: 8),
-                                        child: Text(comment),
+                                final List<String> reversedComments =
+                                    fetchedComments.reversed.toList();
+
+                                return ListView.builder(
+                                  shrinkWrap: true,
+                                  physics: NeverScrollableScrollPhysics(),
+                                  itemCount: reversedComments.length,
+                                  itemBuilder: (context, commentIndex) {
+                                    return Container(
+                                      margin: EdgeInsets.symmetric(vertical: 5),
+                                      child: ListTile(
+                                        dense: true,
+                                        title: Text(
+                                          reversedComments[commentIndex],
+                                          style: TextStyle(fontSize: 16),
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                          side: BorderSide(
+                                            color: Color.fromRGBO(
+                                                4, 67, 62, 0.843),
+                                            width: 1,
+                                          ),
+                                        ),
                                       ),
-                                  ],
+                                    );
+                                  },
                                 );
                               }
                             },
