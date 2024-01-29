@@ -205,7 +205,6 @@ class _MyHomePageState extends State<MyHomePage> {
       // Reset the form after updating
       resetForm();
 
-      // Refresh the UI after updating
       await show();
     } else {
       print('Movie with id $movieId not found.');
@@ -237,7 +236,6 @@ class _MyHomePageState extends State<MyHomePage> {
       Uri.parse("http://localhost:3000/movies/$movieId/like"),
     );
 
-    // Refresh the UI to show updated likes
     show();
   }
 
@@ -361,7 +359,6 @@ class _MyHomePageState extends State<MyHomePage> {
     print('Response status: ${response.statusCode}');
     print('Response body: ${response.body}');
 
-    // Clear the form and refresh the UI to show the new movie
     resetForm();
     show();
   }
