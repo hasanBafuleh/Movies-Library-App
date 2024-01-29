@@ -58,6 +58,7 @@ class _MyHomePageState extends State<MyHomePage> {
   TextEditingController addMovieBtnController = TextEditingController();
 
   TextEditingController commentController = TextEditingController();
+  TextEditingController nameController = TextEditingController();
 
   bool isEditMode = false;
 
@@ -264,20 +265,25 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
 // Method to handle posting a comment
-  void postComment(int movieId, String comment) async {
+  void postComment(int movieId, String name, String comment) async {
     // Send the comment to the server
     final response = await http.post(
       Uri.parse('http://localhost:3000/comments/$movieId'),
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'text': comment}),
+      body: jsonEncode({
+        'name': name,
+        'text': comment,
+      }),
     );
 
     if (response.statusCode == 200) {
       print('Comment posted successfully');
 
       // Invoke the callback to refresh comments
-      updateComments(movieId, comment); // Pass the new comment here
+      // ignore: unnecessary_string_interpolations
+      updateComments(movieId, '$name:', '$comment');
       commentController.clear();
+      nameController.clear();
     } else {
       print('Failed to post comment. Status code: ${response.statusCode}');
     }
@@ -288,7 +294,9 @@ class _MyHomePageState extends State<MyHomePage> {
         await http.get(Uri.parse('http://localhost:3000/comments/$movieId'));
     if (response.statusCode == 200) {
       final List<dynamic> data = json.decode(response.body);
-      return data.map((comment) => comment['text'].toString()).toList();
+      return data
+          .map<String>((comment) => '${comment['name']}: ${comment['text']}')
+          .toList();
     } else {
       throw Exception('Failed to fetch comments');
     }
@@ -296,7 +304,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
   List<String> comments = []; // Add this line before using 'comments'
 
-  Future<void> updateComments(int movieId, String newComment) async {
+  Future<void> updateComments(
+      int movieId, String newName, String newComment) async {
     print('Updating comments for movieId: $movieId, newComment: $newComment');
 
     // Fetch comments and update the state
@@ -305,7 +314,7 @@ class _MyHomePageState extends State<MyHomePage> {
     print('Fetched comments: $fetchedComments');
 
     setState(() {
-      comments = [...fetchedComments.reversed, newComment];
+      comments = [...fetchedComments.reversed, '$newName: $newComment'];
     });
 
     show();
@@ -507,19 +516,48 @@ class _MyHomePageState extends State<MyHomePage> {
                                 Padding(
                                   padding:
                                       const EdgeInsets.symmetric(vertical: 8),
-                                  child: Container(
-                                    width: double.infinity,
-                                    child: TextFormField(
-                                      controller: commentController,
-                                      decoration: InputDecoration(
-                                        labelText: 'Add a comment',
-                                        border: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(10),
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        flex: 1,
+                                        child: Container(
+                                          width: double.infinity,
+                                          child: TextFormField(
+                                            controller: nameController,
+                                            decoration: InputDecoration(
+                                              labelText: 'Name',
+                                              border: OutlineInputBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
+                                              ),
+                                              contentPadding:
+                                                  EdgeInsets.all(8.0),
+                                            ),
+                                          ),
                                         ),
-                                        contentPadding: EdgeInsets.all(8.0),
                                       ),
-                                    ),
+                                      SizedBox(
+                                          width:
+                                              8), // Add space between the input fields
+                                      Expanded(
+                                        flex: 2,
+                                        child: Container(
+                                          width: double.infinity,
+                                          child: TextFormField(
+                                            controller: commentController,
+                                            decoration: InputDecoration(
+                                              labelText: 'Add a comment',
+                                              border: OutlineInputBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
+                                              ),
+                                              contentPadding:
+                                                  EdgeInsets.all(8.0),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                                 Padding(
@@ -529,8 +567,11 @@ class _MyHomePageState extends State<MyHomePage> {
                                     width: double.infinity,
                                     child: ElevatedButton(
                                       onPressed: () {
-                                        postComment(movies[index]['id'],
-                                            commentController.text);
+                                        postComment(
+                                          movies[index]['id'],
+                                          nameController.text,
+                                          commentController.text,
+                                        );
                                       },
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor:
@@ -568,7 +609,6 @@ class _MyHomePageState extends State<MyHomePage> {
                                     snapshot.data ?? [];
                                 final List<String> reversedComments =
                                     fetchedComments.reversed.toList();
-
                                 return ListView.builder(
                                   shrinkWrap: true,
                                   physics: NeverScrollableScrollPhysics(),
